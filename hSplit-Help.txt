@@ -1,0 +1,106 @@
+hSplit rev(0.01)
+-----------------------------------------------------------------
+Syntax
+hSplit.exe [Param1 [Value1 [Param2 Value2 ... ...]]] "Source.file" ["..."]
+-----------------------------------------------------------------
+Parameter
+-h > Show this Help
+
+-S > Segments: split file into segments (default is split Chunks)
+     an array of comma separated start and end bytes is used
+     values for start and end can be an Integer or a Hex string
+     to use hex values set a first char to "h" -> h0-1000,2abc-4def
+     the end byte is NOT included in the target file
+     if an end value is set to 0, it means end of file(last byte)
+     a byte pair of 0-0 means copy the entire file and will be skipped
+     the start byte must be smaller than the end byte
+
+-s > Chunk size: value is an Integer and default means Megabyte (def=20)
+     a first or last char can be set to define the value type
+     b=Byte; k=Kilobyte g=Gigabyte
+
+-c > Chunks count: How many chunks should be written
+     if not set or set to 0 means infinity until the source file ends (def=0)
+
+-t > Target folder: if not set or empty the source folder is used
+
+-n > Target file name: if not set or empty the source filename is used
+
+-P > Progress interval: Control how often the progress is send to the output
+     value is a Byte from 0 to 255
+     value 0 sends no progress numbers; 1=max 255=min (def=100)
+
+-J > Join files: value is a path for a target file
+     only the -P switch can be used additionally
+
+".." > Source file: MUST be the last parameter! Path to source file
+
+@".." > Path to a parameter file: MUST be the first parameter!
+        The parameter file should be a simple text file
+        You can use any name and extension for the file name
+        Only source file parameters can be used additionally
+-----------------------------------------------------------------
+Parameter file
+Each line is used as a parameter
+If you don't set a source path in the parameter file,
+the source path(s) is(are) read from the command-line.
+You can use a root parameter file called "params.txt"
+Exists this file in the root folder of hSplit, it will be used automatically.
+If the "params.txt" is empty, it will be ignored.
+-----------------------------------------------------------------
+Command
+You can send a command while hSplit is running.
+Command will be executed after pressing the ENTER key
+
+"e" > User Exit: stops hSplit
+-----------------------------------------------------------------
+Exit codes
+hSplit sends at the end an exit code
+
+0 - all OK
+1 - no source file
+2 - error while loading source file
+3 - no target folder (not found or could not created)
+4 - chunk size too big (bigger than the source file size)
+5 - nothing to split (no data)
+6 - nothing to join (no data)
+7 - parameter file not found
+8 - parameter file is empty (only if used with the cli parameter)
+9 - wrong parameters
+99 - internal Lazarus error
+-1 - User Exit
+-----------------------------------------------------------------
+Examples
+Split chunks:
+hSplit.exe "Path\to\source.file"
+split entire source file in 20mb chunks
+
+hSplit.exe -s 100 "Path\to\source.file"
+split entire source file in 100mb chunks
+
+hSplit.exe -s g2 -c 10 "Path\to\source.file"
+hSplit.exe -s 2g -c 10 "Path\to\source.file"
+split 10 chunks with 2 gigabyte each
+
+hSplit.exe -t "trg dir" -c 10 -n "trg name" "Path\to\source.file"
+split 10 chunks with 20mb each to folder "tar dir" with name "trg name"
+the file extension is used from the source file
+
+Split segments:
+hSplit.exe -S 0-1000,5000-6000,500-1500 "Path\to\source.file"
+split three segments with 1000 bytes each
+
+hSplit.exe -S h0-1000,5000-6000,500-1500 "Path\to\source.file"
+split three segments with 4096 bytes each
+
+Join files:
+hSplit.exe -J "Path\to trg.file" -P 0 "Path\source.1" "Path\source.2"
+join 2 files without progress numbers
+
+Parameter file:
+hSplit.exe @"Path\to MyParam.file"
+all parameters are read from the parameter file
+
+hSplit.exe @"Path\to MyParam.file" "Path\to\source.file"
+the source parameter from command-line is used (no path in the parameter file)
+(if you want to join files, you can specify more command-line parameters)

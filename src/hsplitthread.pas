@@ -448,7 +448,6 @@ var
       if not FileExists(fPath) then              // Datei nicht vorhanden
       begin
        FJoinFiles.Delete(p);                     // Pfad löschen
-       fPathOld:=fPath;                          // neuen "alten" Pfad sichern
        Continue;                                 // weiter
       end;
       fSize:=FileSizeUtf8(fPath);                // Datei Größe ermitteln

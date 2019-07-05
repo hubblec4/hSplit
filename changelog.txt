@@ -1,0 +1,12 @@
+changelog hSplit
+
+added    &
+fixed    *
+improved #
+changed  %
+
+rev0.01
+* small issue for joining if a source file is not present
+
+# size type can now be also the last char (1b or 2k or 3g)
+  - only one type is allowed: first or last position

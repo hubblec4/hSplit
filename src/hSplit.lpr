@@ -18,7 +18,7 @@ program hSplit;
 **      the start byte must be smaller than the end byte
 **
 ** -s > Chunk size: value is an Integer and default means Megabyte (def=20)
-**      a first char can be set to define the value type
+**      a first or last char can be set to define the value type
 **      b=Byte; k=Kilobyte g=Gigabyte
 **
 ** -c > Chunks count: How many chunks should be written
@@ -93,7 +93,7 @@ uses
 //{$define debug}
 
 const
-  hSplitTitle           = 'hSplit rev(init)';
+  hSplitTitle           = 'hSplit rev(0.01)';
   Interval_Factor       = 1024;
   hsParams_txt          = 'params.txt';
 
@@ -209,10 +209,10 @@ var
      (* Chunk size *)
      '-s':
      begin
-      expression:='[bkg]?\d+';
+      expression:='^\d+$|^[bkg]\d+$|^\d+[bkg]$';
       msg:='Error parameter '+inttostr(p+1)
       +': incorrect format of the chuck size'
-      +#13#10'usage: 123 or b456 or k789 or g1';
+      +#13#10'usage: 123 or b456 or k789 or g1 or 456b or 789k or 1g';
      end;
      (* Chunk count *)
      '-c':
@@ -487,24 +487,41 @@ var
   procedure Process_ChunkSize;
   const kb = 1024; mb = 1024*1024; gb = 1024*1024*1024;
   var
-    c_size: String;
+    c_size,c: String;
     q_size: QWord;
+    l: Integer;
   begin
-    if pos(FPara_ChunkSize[1],'bkg') = 0 then    // Keine Typen Definition
+    l:=Length(FPara_ChunkSize);                  // Länge ermitteln
+    c:=FPara_ChunkSize[1];                       // erstes Zeichen
+    (* Type - 1.Pos *)
+    if pos(c,'bkg') > 0 then                     // Typen Definition 1.Stelle
     begin
-     q_size:=strtoint(FPara_ChunkSize);          // String in Zahl umwandeln
-     FhSplitThread.ChunkSize:=q_size*mb;         // Chunk Size setzen > MegaByte
-    end
-    else                                         // Typenzeichen ist vorhanden
-    begin
-     c_size:=copy(FPara_ChunkSize,2              // ansonsten das Type-Zeichen
-     ,Length(FPara_ChunkSize));                  // abtrennen
+     c_size:=copy(FPara_ChunkSize,2,l);          // Type-Zeichen abtrennen
      q_size:=strtoint(c_size);                   // String in Zahl umwandeln
-     case FPara_ChunkSize[1] of                  // Erstes Zeichen auswerten
+     case c of                                   // Erstes Zeichen auswerten
       'b': FhSplitThread.ChunkSize:=q_size;      // Byte Angabe
       'k': FhSplitThread.ChunkSize:=q_size*kb;   // Kilo Byte Angabe
       'g': FhSplitThread.ChunkSize:=q_size*gb;   // Giga Byte Angabe
      end;
+     Exit;
+    end;
+    (* Type - Letzte Pos *)
+    c:=FPara_ChunkSize[l];                       // letztes Zeichen
+    if pos(c,'bkg') > 0 then                     // Typen Definition 1.Stelle
+    begin
+     c_size:=copy(FPara_ChunkSize,1,l-1);        // Type-Zeichen abtrennen
+     q_size:=strtoint(c_size);                   // String in Zahl umwandeln
+     case c of                                   // Erstes Zeichen auswerten
+      'b': FhSplitThread.ChunkSize:=q_size;      // Byte Angabe
+      'k': FhSplitThread.ChunkSize:=q_size*kb;   // Kilo Byte Angabe
+      'g': FhSplitThread.ChunkSize:=q_size*gb;   // Giga Byte Angabe
+     end;
+    end
+    else
+    if pos(FPara_ChunkSize[1],'bkg') = 0 then    // Keine Typen Definition
+    begin
+     q_size:=strtoint(FPara_ChunkSize);          // String in Zahl umwandeln
+     FhSplitThread.ChunkSize:=q_size*mb;         // Chunk Size setzen > MegaByte
     end;
   end;
 
@@ -742,7 +759,7 @@ begin
   +'     a byte pair of 0-0 means copy the entire file and will be skipped'#13#10
   +'     the start byte must be smaller than the end byte'#13#10#13#10
   +'-s > Chunk size: value is an Integer and default means Megabyte (def=20)'#13#10
-  +'     a first char can be set to define the value type'#13#10
+  +'     a first or last char can be set to define the value type'#13#10
   +'     b=Byte; k=Kilobyte g=Gigabyte'#13#10#13#10
   +'-c > Chunks count: How many chunks should be written'#13#10
   +'     if not set or set to 0 means infinity until the source file ends (def=0)'#13#10#13#10
@@ -762,7 +779,7 @@ begin
   +'Parameter file'#13#10
   +'Each line is used as a parameter'#13#10
   +'If you don''t set a source path in the parameter file,'#13#10
-  +'the source path(s) is(are) read from the commandline.'#13#10
+  +'the source path(s) is(are) read from the command-line.'#13#10
   +'You can use a root parameter file called "params.txt"'#13#10
   +'Exists this file in the root folder of hSplit, it will be used automatically.'#13#10
   +'If the "params.txt" is empty, it will be ignored.'#13#10
@@ -794,6 +811,7 @@ begin
   +'hSplit.exe -s 100 "Path\to\source.file"'#13#10
   +'split entire source file in 100mb chunks'#13#10#13#10
   +'hSplit.exe -s g2 -c 10 "Path\to\source.file"'#13#10
+  +'hSplit.exe -s 2g -c 10 "Path\to\source.file"'#13#10
   +'split 10 chunks with 2 gigabyte each'#13#10#13#10
   +'hSplit.exe -t "trg dir" -c 10 -n "trg name" "Path\to\source.file"'#13#10
   +'split 10 chunks with 20mb each to folder "tar dir" with name "trg name"'#13#10
@@ -810,8 +828,8 @@ begin
   +'hSplit.exe @"Path\to MyParam.file"'#13#10
   +'all parameters are read from the parameter file'#13#10#13#10
   +'hSplit.exe @"Path\to MyParam.file" "Path\to\source.file"'#13#10
-  +'the source parameter from commandline is used (no path in the parameter file)'#13#10
-  +'(if you want to join files, you can specify more commandline parameters)';
+  +'the source parameter from command-line is used (no path in the parameter file)'#13#10
+  +'(if you want to join files, you can specify more command-line parameters)';
 
   writeln(help);
   {$ifdef windows}

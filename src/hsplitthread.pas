@@ -319,7 +319,7 @@ var
      if (ByteEnd = 0)                            // 0 = bis Ende Datei
      or (ByteEnd > FSrcSize) then                // End ist zu groß
      begin
-      FSegmentEnds[a]:=FSrcSize;                // Datei größe setzen
+      FSegmentEnds[a]:=FSrcSize;                 // Datei größe setzen
       ByteEnd:=FSrcSize;                         // neues Ende setzen
      end;
 
@@ -340,7 +340,7 @@ begin
   starts_count:=Length(FSegmentStarts);          // Anzahl Starts
   ends_count:=Length(FSegmentEnds);              // Anzahl Ends
   if starts_count = ends_count then              // beide gleich lang
-  maxSegs:=starts_count                          // max Segemente setzen
+  maxSegs:=starts_count                          // max Segmente setzen
   else
   if starts_count > ends_count then              // es gibt mehr starts als end
   maxSegs:=ends_count                            // Ende Anzahl nutzen
@@ -363,7 +363,7 @@ begin
   try
    for s:=0 to maxSegs -1 do                     // Segmente durchgehen
    begin
-    ByteEnd:=FSegmentEnds[s];                    // End Byyte ermitteln
+    ByteEnd:=FSegmentEnds[s];                    // End Byte ermitteln
     // EndByte 0 ist nicht Ende Datei, das wurde vorher geprüft
     if ByteEnd = 0 then Continue;                // End=0 überspringen
     FChunkBytes_readed:=0;                       // Chunk Bytes gelesen reset

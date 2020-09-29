@@ -5,6 +5,12 @@ fixed    *
 improved #
 changed  %
 
+
+rev0.02 01.10.2020
+* hSplit not working if the root parameter file (params.txt) is not present
+  and no parameter file was set in the commandline
+
+
 rev0.01
 * small issue for joining if a source file is not present
 

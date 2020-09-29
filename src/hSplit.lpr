@@ -93,7 +93,7 @@ uses
 //{$define debug}
 
 const
-  hSplitTitle           = 'hSplit rev(0.01)';
+  hSplitTitle           = 'hSplit rev(0.02)';
   Interval_Factor       = 1024;
   hsParams_txt          = 'params.txt';
 
@@ -336,7 +336,10 @@ var
      begin
       ExitCode:=hsErr_NoParams_txt;              // Params Datei nicht gefunden
       WriteLn('The params file could not be found.');
+      Exit;
      end;
+     // Param Datei check erfolgreich aber nicht benutzt
+     Result:=true;                               // Result auf true
      Exit;
     end;
 
